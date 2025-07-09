@@ -1,0 +1,9 @@
+# Configuração do Air para my-finance-hub-api
+[build]
+  cmd = "go run ./cmd/main.go"
+  bin = "tmp/api.exe"
+  include_ext = ["go"]
+  exclude_dir = ["vendor"]
+
+[log]
+  time = true 
