@@ -1,0 +1,38 @@
+# Git
+.git
+.gitignore
+
+# Docker
+Dockerfile
+docker-compose.yml
+
+# Ambiente de desenvolvimento
+.env
+*.env
+
+# Arquivos de build e cache
+tmp/
+build/
+*.log
+
+# Arquivos de IDE
+.vscode/
+.idea/
+
+# Dependências de desenvolvimento
+vendor/
+node_modules/
+
+# Arquivos de sistema
+.DS_Store
+Thumbs.db
+
+# Arquivos de backup
+*.bak
+*.swp
+*~
+
+# Arquivos de compilação
+*.exe
+*.test
+*.out 
