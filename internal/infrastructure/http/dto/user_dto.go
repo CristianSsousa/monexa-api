@@ -17,6 +17,12 @@ type LoginRequest struct {
 	Password string `json:"password" binding:"required"`
 }
 
+type UpdateUserDTO struct {
+	Name     string `json:"name" validate:"required,min=2,max=100"`
+	Email    string `json:"email" validate:"required,email"`
+	Password string `json:"password,omitempty" validate:"omitempty,min=6"`
+}
+
 type UpdateUserRequest struct {
 	Name  string `json:"name" binding:"required,min=2,max=100"`
 	Email string `json:"email" binding:"required,email"`

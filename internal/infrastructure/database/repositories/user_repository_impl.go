@@ -3,31 +3,33 @@ package repositories
 import (
 	"context"
 	"errors"
+
 	"my-finance-hub-api/internal/domain/entities"
 	"my-finance-hub-api/internal/domain/repositories"
 	"my-finance-hub-api/internal/infrastructure/database/models"
-	pkgErrors "my-finance-hub-api/pkg/errors"
 
 	"gorm.io/gorm"
 )
 
-type userRepositoryImpl struct {
-	db *gorm.DB
+type UserRepositoryImpl struct {
+	DB *gorm.DB
 }
 
+var _ repositories.UserRepository = &UserRepositoryImpl{}
+
 func NewUserRepository(db *gorm.DB) repositories.UserRepository {
-	return &userRepositoryImpl{
-		db: db,
+	return &UserRepositoryImpl{
+		DB: db,
 	}
 }
 
-func (r *userRepositoryImpl) Create(ctx context.Context, user *entities.User) error {
+func (r *UserRepositoryImpl) Create(ctx context.Context, user *entities.User) error {
 	model := &models.User{}
 	model.FromEntity(user)
 
-	if err := r.db.WithContext(ctx).Create(model).Error; err != nil {
+	if err := r.DB.WithContext(ctx).Create(model).Error; err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
-			return pkgErrors.ErrEmailAlreadyExists
+			return errors.New("email já está em uso") // Changed from pkgErrors.ErrEmailAlreadyExists
 		}
 		return err
 	}
@@ -40,12 +42,12 @@ func (r *userRepositoryImpl) Create(ctx context.Context, user *entities.User) er
 	return nil
 }
 
-func (r *userRepositoryImpl) GetByID(ctx context.Context, id uint) (*entities.User, error) {
+func (r *UserRepositoryImpl) GetByID(ctx context.Context, id uint) (*entities.User, error) {
 	var model models.User
 
-	if err := r.db.WithContext(ctx).First(&model, id).Error; err != nil {
+	if err := r.DB.WithContext(ctx).First(&model, id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, pkgErrors.ErrUserNotFound
+			return nil, errors.New("usuário não encontrado") // Changed from pkgErrors.ErrUserNotFound
 		}
 		return nil, err
 	}
@@ -53,12 +55,12 @@ func (r *userRepositoryImpl) GetByID(ctx context.Context, id uint) (*entities.Us
 	return model.ToEntity(), nil
 }
 
-func (r *userRepositoryImpl) GetByEmail(ctx context.Context, email string) (*entities.User, error) {
+func (r *UserRepositoryImpl) GetByEmail(ctx context.Context, email string) (*entities.User, error) {
 	var model models.User
 
-	if err := r.db.WithContext(ctx).Where("email = ?", email).First(&model).Error; err != nil {
+	if err := r.DB.WithContext(ctx).Where("email = ?", email).First(&model).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, pkgErrors.ErrUserNotFound
+			return nil, errors.New("usuário não encontrado") // Changed from pkgErrors.ErrUserNotFound
 		}
 		return nil, err
 	}
@@ -66,11 +68,11 @@ func (r *userRepositoryImpl) GetByEmail(ctx context.Context, email string) (*ent
 	return model.ToEntity(), nil
 }
 
-func (r *userRepositoryImpl) Update(ctx context.Context, user *entities.User) error {
+func (r *UserRepositoryImpl) Update(ctx context.Context, user *entities.User) error {
 	model := &models.User{}
 	model.FromEntity(user)
 
-	if err := r.db.WithContext(ctx).Save(model).Error; err != nil {
+	if err := r.DB.WithContext(ctx).Save(model).Error; err != nil {
 		return err
 	}
 
@@ -80,36 +82,47 @@ func (r *userRepositoryImpl) Update(ctx context.Context, user *entities.User) er
 	return nil
 }
 
-func (r *userRepositoryImpl) Delete(ctx context.Context, id uint) error {
-	result := r.db.WithContext(ctx).Delete(&models.User{}, id)
+func (r *UserRepositoryImpl) Delete(ctx context.Context, id uint) error {
+	result := r.DB.WithContext(ctx).Delete(&models.User{}, id)
 
 	if result.Error != nil {
 		return result.Error
 	}
 
 	if result.RowsAffected == 0 {
-		return pkgErrors.ErrUserNotFound
+		return errors.New("usuário não encontrado") // Changed from pkgErrors.ErrUserNotFound
 	}
 
 	return nil
 }
 
-func (r *userRepositoryImpl) Exists(ctx context.Context, id uint) (bool, error) {
+func (r *UserRepositoryImpl) Exists(ctx context.Context, id uint) (bool, error) {
 	var count int64
 
-	if err := r.db.WithContext(ctx).Model(&models.User{}).Where("id = ?", id).Count(&count).Error; err != nil {
+	if err := r.DB.WithContext(ctx).Model(&models.User{}).Where("id = ?", id).Count(&count).Error; err != nil {
 		return false, err
 	}
 
 	return count > 0, nil
 }
 
-func (r *userRepositoryImpl) EmailExists(ctx context.Context, email string) (bool, error) {
+func (r *UserRepositoryImpl) EmailExists(ctx context.Context, email string) (bool, error) {
 	var count int64
 
-	if err := r.db.WithContext(ctx).Model(&models.User{}).Where("email = ?", email).Count(&count).Error; err != nil {
+	if err := r.DB.WithContext(ctx).Model(&models.User{}).Where("email = ?", email).Count(&count).Error; err != nil {
 		return false, err
 	}
 
 	return count > 0, nil
+}
+
+func (r *UserRepositoryImpl) UpdateUser(ctx context.Context, userID uint, updateData *entities.User) error {
+	result := r.DB.WithContext(ctx).Model(&models.User{}).Where("id = ?", userID).Updates(updateData)
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return errors.New("usuário não encontrado")
+	}
+	return nil
 }
