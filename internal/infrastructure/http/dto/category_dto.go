@@ -9,11 +9,13 @@ import (
 type CreateCategoryRequest struct {
 	Name  string `json:"name" binding:"required,min=2,max=100"`
 	Color string `json:"color" binding:"required,hexcolor"`
+	Types string `json:"type" binding:"required,oneof=expense income investment"`
 }
 
 type UpdateCategoryRequest struct {
 	Name  string `json:"name" binding:"required,min=2,max=100"`
 	Color string `json:"color" binding:"required,hexcolor"`
+	Types string `json:"type" binding:"required,oneof=expense income investment"`
 }
 
 // Response DTOs
@@ -22,6 +24,7 @@ type CategoryResponse struct {
 	Name      string    `json:"name"`
 	Color     string    `json:"color"`
 	UserID    uint      `json:"user_id"`
+	Type      string    `json:"type"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
@@ -33,6 +36,7 @@ func ToCategoryResponse(category *entities.Category) CategoryResponse {
 		Name:      category.Name,
 		Color:     category.Color,
 		UserID:    category.UserID,
+		Type:      category.Type,
 		CreatedAt: category.CreatedAt,
 		UpdatedAt: category.UpdatedAt,
 	}
@@ -47,9 +51,9 @@ func ToCategoryResponseList(categories []*entities.Category) []CategoryResponse 
 }
 
 func (req *CreateCategoryRequest) ToEntity(userID uint) *entities.Category {
-	return entities.NewCategory(req.Name, req.Color, userID)
+	return entities.NewCategory(req.Name, req.Color, userID, req.Types)
 }
 
 func (req *UpdateCategoryRequest) ToEntity(userID uint) *entities.Category {
-	return entities.NewCategory(req.Name, req.Color, userID)
+	return entities.NewCategory(req.Name, req.Color, userID, req.Types)
 }

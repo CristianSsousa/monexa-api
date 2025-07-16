@@ -12,6 +12,7 @@ type Category struct {
 	Name      string `gorm:"not null"`
 	Color     string `gorm:"not null"`
 	UserID    uint   `gorm:"column:user_id"`
+	Type      string `gorm:"not null"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	DeletedAt gorm.DeletedAt `gorm:"index"`
@@ -23,6 +24,7 @@ func (c *Category) FromEntity(entity *entities.Category) {
 	c.Name = entity.Name
 	c.Color = entity.Color
 	c.UserID = entity.UserID
+	c.Type = entity.Type
 	c.CreatedAt = entity.CreatedAt
 	c.UpdatedAt = entity.UpdatedAt
 }
@@ -34,6 +36,7 @@ func (c *Category) ToEntity() *entities.Category {
 		Name:      c.Name,
 		Color:     c.Color,
 		UserID:    c.UserID,
+		Type:      c.Type,
 		CreatedAt: c.CreatedAt,
 		UpdatedAt: c.UpdatedAt,
 	}

@@ -101,7 +101,7 @@ func (s *categoryServiceImpl) UpdateCategory(ctx context.Context, userID, catego
 	}
 
 	// Atualizar categoria
-	category.Update(updates.Name, updates.Color)
+	category.Update(updates.Name, updates.Color, updates.Type)
 
 	if err := s.categoryRepo.Update(ctx, category); err != nil {
 		return nil, err
